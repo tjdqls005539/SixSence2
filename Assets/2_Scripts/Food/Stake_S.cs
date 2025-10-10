@@ -4,20 +4,13 @@ using UnityEngine;
 
 public class Stake_S : Food_SysTem
 {
-    // Start is called before the first frame update
-    void Start()
+    public float _cookStake = 5f;
+    private void OnMouseUp()
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-    public override void Cooking()
-    {
-        
+        gameM.instance._stoveMenu = false;
+        gameM.instance._cookTime = _cookStake;
+        _stoveSystem._isCooking = true;
+        _stoveSystem._cookSlider.maxValue = _cookStake;
+        _stoveSystem._foodName = "Stake";
     }
 }
