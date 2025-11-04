@@ -6,11 +6,12 @@ TagManager:
   tags:
   - Trash
   - Food
+  - BurntFood
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - BackGround
   - Water
   - UI
   - 

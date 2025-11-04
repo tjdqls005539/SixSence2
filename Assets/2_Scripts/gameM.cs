@@ -5,8 +5,6 @@ using UnityEngine;
 public class gameM : MonoBehaviour
 {
     public static gameM instance = null;
-    public bool _stoveMenu = false;
-    public float _cookTime = 0f;
     void Awake()
     {
         if (null == instance)
