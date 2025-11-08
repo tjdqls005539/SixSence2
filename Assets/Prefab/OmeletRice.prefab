@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: -679165273027717377}
   - component: {fileID: -4841134489108671480}
   - component: {fileID: 8310899005981896593}
+  - component: {fileID: 2824828840648867755}
   m_Layer: 0
   m_Name: OmeletRice
   m_TagString: Untagged
@@ -173,6 +174,19 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &2824828840648867755
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7130006211705239373}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f64c8678d552fa4c82f836ad548bc88, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  foodData: {fileID: 11400000, guid: 92b0c2be9bf86984682787614825799b, type: 2}
 --- !u!1 &8544988314750147225
 GameObject:
   m_ObjectHideFlags: 0

@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   foodName: ChocolateCake
   icon: {fileID: 21300000, guid: 363a5b21cc473594fbda05d21bf36051, type: 3}
-  prefab: {fileID: 6171672429155630729, guid: 3cdcd32a5aa9f4648a7ee06c07ed2340, type: 3}
+  prefab: {fileID: 8673053513998936580, guid: 3cdcd32a5aa9f4648a7ee06c07ed2340, type: 3}
   price: 80

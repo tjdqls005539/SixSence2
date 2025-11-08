@@ -1,29 +1,21 @@
-// CustomerSpawner.cs
 using UnityEngine;
 using System.Collections;
 
 public class CustomerSpawner : MonoBehaviour
 {
     public GameObject customerPrefab;
-    public Transform counterPoint; // 씬의 카운터 오브젝트
-    public Transform exitPoint;    // 출구 오브젝트
+    public Transform counterPoint;
+    public Transform exitPoint;
     public float spawnInterval = 5f;
 
-    void Start()
-    {
-        if (customerPrefab == null || counterPoint == null || exitPoint == null)
-        {
-            Debug.LogError("[CustomerSpawner] 필수 변수가 설정되지 않았습니다.");
-            return;
-        }
-
-        StartCoroutine(SpawnRoutine());
-    }
-
-    IEnumerator SpawnRoutine()
+    IEnumerator Start()
     {
         while (true)
         {
+            //  남은 시간이 20초 이하이면 더 이상 손님 생성 X
+            if (TimeManager.Instance.GetRemainingTime() <= 20f)
+                yield break;
+
             GameObject customerObj = Instantiate(customerPrefab, transform.position, Quaternion.identity);
             Customer customer = customerObj.GetComponent<Customer>();
             if (customer != null)
@@ -33,10 +25,16 @@ public class CustomerSpawner : MonoBehaviour
                 customer.StartFindingChair();
             }
 
+            //  방문 손님 1명 증가
+            MoneyManager.Instance.AddVisitor();
+
             yield return new WaitForSeconds(spawnInterval);
         }
     }
 }
+
+
+
 
 
 

@@ -1,12 +1,16 @@
 using UnityEngine;
-using TMPro; // TMP_Text 사용
+using TMPro;
 
 public class MoneyManager : MonoBehaviour
 {
     public static MoneyManager Instance;
     public int totalMoney = 0;
-
-    public TMP_Text moneyText; // 기존 Text 대신 TMP_Text
+    
+    public int visitedCustomersCount = 0; // 방문 손님 수 기록
+    public int moneyAtGameStart = 0; // 라운드 시작 전 금액
+    public int roundEarnings = 0; // 이번 라운드 동안 번 금액
+    
+    public TMP_Text moneyText;
 
     private void Awake()
     {
@@ -14,10 +18,21 @@ public class MoneyManager : MonoBehaviour
         else Destroy(gameObject);
     }
 
+    private void Start()
+    {
+        moneyAtGameStart = totalMoney; // 게임 시작 시 현재 금액 저장
+    }
+
     public void AddMoney(int amount)
     {
         totalMoney += amount;
+        roundEarnings = totalMoney - moneyAtGameStart;
         UpdateUI();
+    }
+
+    public void AddVisitor()
+    {
+        visitedCustomersCount++;
     }
 
     private void UpdateUI()
@@ -26,6 +41,7 @@ public class MoneyManager : MonoBehaviour
             moneyText.text = $"누적 매출: {totalMoney}원";
     }
 }
+
 
 
 

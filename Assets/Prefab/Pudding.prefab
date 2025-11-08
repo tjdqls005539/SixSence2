@@ -97,6 +97,7 @@ GameObject:
   - component: {fileID: -3678615619778959547}
   - component: {fileID: 658982862229901126}
   - component: {fileID: -7443824703161062127}
+  - component: {fileID: 2232518110091150333}
   m_Layer: 0
   m_Name: Pudding
   m_TagString: Untagged
@@ -257,3 +258,16 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &2232518110091150333
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6498090505072787438}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f64c8678d552fa4c82f836ad548bc88, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  foodData: {fileID: 11400000, guid: 8c0063b0245117849847c15c7e0c924f, type: 2}
