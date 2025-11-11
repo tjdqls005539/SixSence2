@@ -5,6 +5,7 @@ using UnityEngine;
 public class gameM : MonoBehaviour
 {
     public static gameM instance = null;
+    public float _gold;
     void Awake()
     {
         if (null == instance)

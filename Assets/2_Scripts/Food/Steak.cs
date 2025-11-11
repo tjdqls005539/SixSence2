@@ -2,10 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Steak : MonoBehaviour
+public class Steak : FoodSystem
 {
     private void OnMouseDown()
     {
-        MenuManager.Instance.OnClick_CookSteak();
+        OnClick_CookFood();
     }
 }

@@ -57,7 +57,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 0
+  m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 0
@@ -167,7 +167,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -7.18, y: 1.09, z: 0}
-  m_LocalScale: {x: 2, y: 2, z: 1}
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8696432351602424152}
@@ -283,18 +283,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e090d6bfdad63941b9762d480f1e909, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  foodRecipe:
-  - foodName: Steak
-    foodPrefab: {fileID: 2667311508328295361, guid: dee588ecf8b9da341a6456c6bb4af1fc, type: 3}
-    cookTime: 8
-  - foodName: Cake
-    foodPrefab: {fileID: 4643916434384641475, guid: a24c6daf806226845ac6d65c80341000, type: 3}
-    cookTime: 2
-  - foodName: Soop
-    foodPrefab: {fileID: 8555987817032447440, guid: 2e16bd09c670e204aaeb430b0b618baa, type: 3}
-    cookTime: 4
-  burntFood: {fileID: 4170662780873564898, guid: bd7023fccb9be584199303cd145caffe, type: 3}
-  burntTime: 5
+  _maxLev: 3
   foodSpawnPoint: {fileID: 8696432351602424152}
   cookingSlider: {fileID: 8045908945253161013}
 --- !u!1 &5536586403193283673

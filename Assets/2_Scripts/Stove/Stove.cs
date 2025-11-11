@@ -1,38 +1,22 @@
-using System.Collections;
+Ôªøusing System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[System.Serializable]
-public class FoodMenu
+
+public class Stove : StoveLevelSystem
 {
-    public string foodName;
-    public GameObject foodPrefab;
-    public float cookTime;
-    //'« ø‰«— ¿Á∑·', '∞°∞›' µÓ¿ª √ﬂ∞° ∞°¥…
-}
-
-public class Stove : MonoBehaviour
-{
-
-    [Header("ø‰∏Æ º≥¡§")]
-    public List<FoodMenu> foodRecipe;
-    
-    [Header("≈¬øÓ ø‰∏Æ")]
-    public GameObject burntFood;
-    public float burntTime;
-
-    [Header("¿ßƒ° º≥¡§")]
+    [Header("ÏúÑÏπò ÏÑ§Ï†ï")]
     public Transform foodSpawnPoint;
     
-    [Header("UI º≥¡§")]
+    [Header("UI ÏÑ§Ï†ï")]
     public Slider cookingSlider;
 
     private bool isCooking = false;
-
     private void Start()
     {
+        StoveSetting();
         if (cookingSlider != null)
         {
             cookingSlider.gameObject.SetActive(false);
@@ -41,11 +25,6 @@ public class Stove : MonoBehaviour
 
     private void OnMouseDown()
     {
-        //// 1. UI ¿ß∏¶ ≈¨∏Ø«ﬂ¥Ÿ∏È π´Ω√ (¡ﬂø‰)
-        //if (EventSystem.current.IsPointerOverGameObject())
-        //{
-        //    return;
-        //}
         if (isCooking)
         {
             return;
@@ -63,26 +42,40 @@ public class Stove : MonoBehaviour
             MenuManager.Instance.ShowMenu(this);
         }
     }
-
-    public void StartCooking(string foodName)
+    public override void StoveSetting()
     {
-        if (isCooking) return;
-
-        FoodMenu recipe = foodRecipe.Find(r => r.foodName == foodName);
-
-        if (recipe != null)
+        if (_data._level == 0)
         {
-            StartCoroutine(CookRoutine(recipe.foodPrefab, recipe.cookTime));
-        }
-        else
-        {
-            Debug.LogError(foodName + "ø° «ÿ¥Á«œ¥¬ ∑πΩ√««∏¶ √£¿ª ºˆ æ¯Ω¿¥œ¥Ÿ!");
+            _data._level = 1;
+            _data._burnTime = 0f;
+            _data._foodTime = 0f;
         }
     }
 
-    private IEnumerator CookRoutine(GameObject foodToCook, float cookTime)
+    public void StartCooking(FoodSystem foodData)
+    {
+        if (isCooking) return;
+
+
+        if (foodData != null)
+        {
+            StartCoroutine(CookRoutine(foodData));
+        }
+        else
+        {
+            Debug.LogError(foodData.foodName + "Ïóê Ìï¥ÎãπÌïòÎäî Î†àÏãúÌîºÎ•º Ï∞æÏùÑ Ïàò ÏóÜÏäµÎãàÎã§!");
+        }
+    }
+
+    private IEnumerator CookRoutine(FoodSystem foodData)
     {
         isCooking = true;
+
+        GameObject prefabToSpawn = foodData.foodPrefab;
+        GameObject burntFoodToSpawn = foodData.burntFoodPrefab;
+
+ ¬† ¬† ¬† ¬†float cookTime = foodData.cookTime - _data._foodTime;
+ ¬† ¬† ¬† ¬†float burntTimeForThisFood = foodData.burntTime + _data._burnTime;
 
         bool useSlider = cookingSlider != null && cookTime > 0;
 
@@ -107,27 +100,23 @@ public class Stove : MonoBehaviour
         }
 
         GameObject spawnedFood = null;
-        if (foodSpawnPoint != null && foodToCook != null)
+        if (foodSpawnPoint != null && prefabToSpawn != null)
         {
-            spawnedFood = Instantiate(foodToCook, foodSpawnPoint.position, foodSpawnPoint.rotation);
+            spawnedFood = Instantiate(prefabToSpawn, foodSpawnPoint.position, foodSpawnPoint.rotation);
         }
         else
         {
-            Debug.LogError("Ω∫∆˘ ∆˜¿Œ∆Æ ∂«¥¬ ¿ΩΩƒ «¡∏Æ∆’¿Ã º≥¡§µ«¡ˆ æ æ“Ω¿¥œ¥Ÿ!");
+            Debug.LogError("Ïä§Ìè∞ Ìè¨Ïù∏Ìä∏ ÎòêÎäî ÏùåÏãù ÌîÑÎ¶¨ÌåπÏù¥ ÏÑ§Ï†ïÎêòÏßÄ ÏïäÏïòÏäµÎãàÎã§!");
             isCooking = false;
             yield break;
         }
 
-        if (burntTime > 0 && burntFood != null)
+        if (burntTimeForThisFood > 0 && burntFoodToSpawn != null)
         {
-            Debug.Log(foodToCook.name + "¿Ã(∞°) ≈∏±‚ Ω√¿€«’¥œ¥Ÿ... (" + burntTime + "√ )");
-
             float burntElapsedTime = 0f;
-
-            while (burntElapsedTime < burntTime)
+ ¬† ¬† ¬† ¬† ¬† ¬†while (burntElapsedTime < burntTimeForThisFood)
             {
                 burntElapsedTime += Time.deltaTime;
-
                 if (spawnedFood == null)
                 {
                     isCooking = false;
@@ -139,10 +128,10 @@ public class Stove : MonoBehaviour
             if (spawnedFood != null)
             {
                 Destroy(spawnedFood);
-                Instantiate(burntFood, foodSpawnPoint.position, foodSpawnPoint.rotation);
+                Instantiate(burntFoodToSpawn, foodSpawnPoint.position, foodSpawnPoint.rotation);
             }
         }
-        isCooking = false; // Ω∫≈‰∫Í ªÁøÎ ∞°¥…
+        isCooking = false;
     }
     private bool IsFoodAlreadyAtSpawnPoint()
     {
@@ -158,6 +147,17 @@ public class Stove : MonoBehaviour
             }
         }
 
-        return false; // ¿ΩΩƒ¿Ã æ¯¥Ÿ.
+        return false; // ÏùåÏãùÏù¥ ÏóÜÎã§.
+    }
+    public void OnClick_UpgradeAllStoves()
+    {
+        if (StoveManager.Instance != null)
+        {
+            StoveManager.Instance.UpgradeAllStoves();
+        }
+        else
+        {
+            Debug.LogError("StoveManagerÍ∞Ä Ïî¨Ïóê ÏóÜÏäµÎãàÎã§! Ïî¨Ïóê StoveManager Ïò§Î∏åÏ†ùÌä∏Î•º Ï∂îÍ∞ÄÌñàÎäîÏßÄ ÌôïÏù∏ÌïòÏÑ∏Ïöî.");
+        }
     }
 }
