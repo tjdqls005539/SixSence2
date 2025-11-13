@@ -4,42 +4,43 @@ using System.Collections;
 [RequireComponent(typeof(Rigidbody2D))]
 public class Customer : MonoBehaviour
 {
-    [Header("이동 및 탐색 설정")]
+    [Header("이동 설정")]
     public float moveSpeed = 2f;
     public LayerMask obstacleLayer;
 
-    [Header("주문 관련 설정")]
+    [Header("주문")]
     public Food[] foodOptions;
-
-    [Header("접시 프리팹 연결")]
     public GameObject dishPrefab;
 
     [Header("참조")]
     public MoneyManager moneyManager;
-
-    [Header("카운터 및 출구 설정")]
     public Transform counterPosition;
     public Transform exitPositionTransform;
 
-    private GameObject orderIconGO;
-    private SpriteRenderer orderIconRenderer;
+    [Header("주문 아이콘 설정")]
+    public float iconScale = 0.5f;
+    public float iconHeight = 1.5f;
+
     private Rigidbody2D rb;
     private CC targetChair;
-    private Vector2 targetPosition;
-    private bool hasChair = false;
-    private bool isLeaving = false;
-    private bool orderCompleted = false;
-    private bool hasPaid = false;
     private Food orderedFood;
+    private GameObject orderIconGO;
 
     private enum LeaveState { None, GoingToCounter, PayingAtCounter, GoingToExit }
     private LeaveState leaveState = LeaveState.None;
+
+    private bool hasSat = false;
+    private bool orderCompleted = false;
+    private bool isEating = false;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         rb.constraints = RigidbodyConstraints2D.FreezeRotation;
         rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+
+        if (obstacleLayer == 0)
+            obstacleLayer = LayerMask.GetMask("Obstacle");
     }
 
     public void StartFindingChair()
@@ -49,13 +50,12 @@ public class Customer : MonoBehaviour
 
     private IEnumerator FindChairRoutine()
     {
-        while (!hasChair)
+        while (targetChair == null)
         {
             CC chair = CCManager.Instance.GetAvailableChair();
             if (chair != null && chair.Reserve())
             {
                 targetChair = chair;
-                targetPosition = chair.transform.position;
                 break;
             }
             yield return new WaitForSecondsRealtime(0.2f);
@@ -64,150 +64,70 @@ public class Customer : MonoBehaviour
 
     void Update()
     {
-        if (!hasChair && !isLeaving && targetChair != null)
+        if (targetChair != null && !hasSat)
         {
-            Vector2 moveTarget = targetPosition + Random.insideUnitCircle * 0.05f;
-            MoveTowardsPosition(moveTarget);
+            MoveTowards(targetChair.transform.position);
+            if (Vector2.Distance(rb.position, targetChair.transform.position) < 0.3f)
+                SitOnChair();
         }
-        else if (isLeaving)
+        else if (orderCompleted)
         {
             HandleLeaving();
         }
     }
 
-    private void HandleLeaving()
+    private void MoveTowards(Vector2 targetPos)
     {
-        if (counterPosition == null || exitPositionTransform == null)
-            return;
+        Vector2 dir = (targetPos - rb.position).normalized;
 
-        Vector2 targetPos = Vector2.zero;
-
-        switch (leaveState)
+        // 장애물 회피
+        Collider2D[] obstacles = Physics2D.OverlapCircleAll(rb.position, 1.5f, obstacleLayer);
+        foreach (var obs in obstacles)
         {
-            case LeaveState.GoingToCounter:
-                targetPos = counterPosition.position;
-                if (Vector2.Distance(rb.position, targetPos) < 0.1f)
-                {
-                    leaveState = LeaveState.PayingAtCounter;
-                }
-                break;
-
-            case LeaveState.PayingAtCounter:
-                if (!hasPaid)
-                {
-                    hasPaid = true;
-                    if (orderedFood != null && moneyManager != null)
-                    {
-                        moneyManager.AddMoney((int)orderedFood.price);
-                        Debug.Log($"{gameObject.name} 손님이 Counter에서 {orderedFood.price}원을 결제했습니다!");
-                    }
-                }
-                leaveState = LeaveState.GoingToExit;
-                break;
-
-            case LeaveState.GoingToExit:
-                targetPos = exitPositionTransform.position;
-                if (Vector2.Distance(rb.position, targetPos) < 0.1f)
-                {
-                    Destroy(gameObject);
-                    return;
-                }
-                break;
+            Vector2 away = rb.position - (Vector2)obs.transform.position;
+            dir += away.normalized / Mathf.Max(away.magnitude, 0.1f);
         }
-
-        if (leaveState != LeaveState.PayingAtCounter)
-            MoveTowardsPosition(targetPos);
-    }
-
-    private void MoveTowardsPosition(Vector2 targetPos)
-    {
-        Vector2 moveDir = targetPos - rb.position;
-        float distance = moveDir.magnitude;
-
-        if (distance > 0.01f)
-        {
-            moveDir.Normalize();
-
-            Collider2D[] obstacles = Physics2D.OverlapCircleAll(rb.position, 0.7f, obstacleLayer);
-            foreach (Collider2D obstacle in obstacles)
-            {
-                Vector2 awayFromObstacle = rb.position - (Vector2)obstacle.transform.position;
-                float weight = 1f / Mathf.Max(awayFromObstacle.magnitude, 0.1f);
-                moveDir += awayFromObstacle.normalized * weight;
-            }
-
-            moveDir.Normalize();
-            rb.MovePosition(rb.position + moveDir * moveSpeed * Time.deltaTime);
-
-            float angle = Mathf.Atan2(moveDir.y, moveDir.x) * Mathf.Rad2Deg;
-            rb.rotation = angle - 90f;
-        }
-
-        if (!hasChair && !isLeaving && Vector2.Distance(rb.position, targetPosition) < 0.1f)
-            SitOnChair();
+        dir.Normalize();
+        rb.MovePosition(rb.position + dir * moveSpeed * Time.deltaTime);
+        rb.rotation = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90f;
     }
 
     private void SitOnChair()
     {
-        if (targetChair == null)
-        {
-            Destroy(gameObject);
-            return;
-        }
+        if (targetChair == null || hasSat) return;
 
-        hasChair = true;
+        hasSat = true;
         targetChair.Sit();
         rb.position = targetChair.transform.position;
 
-        float chairAngle = Mathf.Atan2(targetChair.sitDirection.y, targetChair.sitDirection.x) * Mathf.Rad2Deg;
-        rb.rotation = chairAngle - 90f;
-
+        // 주문 선택
         if (foodOptions != null && foodOptions.Length > 0)
         {
-            int index = Random.Range(0, foodOptions.Length);
-            orderedFood = foodOptions[index];
-            if (OrderManager.Instance != null)
-                OrderManager.Instance.AddOrder(orderedFood);
-
-            Debug.Log($"{gameObject.name} 손님이 {orderedFood.foodName}을 주문했습니다. (가격: {orderedFood.price}원)");
+            orderedFood = foodOptions[Random.Range(0, foodOptions.Length)];
+            OrderManager.Instance?.AddOrder(orderedFood);
         }
 
-        if (orderedFood != null && orderedFood.icon != null)
+        // 주문 아이콘 생성
+        if (orderedFood?.icon != null)
         {
-            orderIconGO = new GameObject("MainHall_Order");
+            if (orderIconGO != null) Destroy(orderIconGO);
+            orderIconGO = new GameObject("OrderIcon");
             orderIconGO.transform.SetParent(transform);
-            orderIconGO.transform.localPosition = Vector3.up * 1.5f;
-            orderIconGO.transform.localScale = Vector3.one * 0.5f;
+            orderIconGO.transform.localPosition = Vector3.up * iconHeight;
+            orderIconGO.transform.localScale = Vector3.one * iconScale;
 
-            orderIconRenderer = orderIconGO.AddComponent<SpriteRenderer>();
-            orderIconRenderer.sprite = orderedFood.icon;
-            orderIconRenderer.sortingOrder = 10;
+            var sr = orderIconGO.AddComponent<SpriteRenderer>();
+            sr.sprite = orderedFood.icon;
+            sr.sortingLayerName = "UI";
+            sr.sortingOrder = 100;
         }
-
-        StartCoroutine(WaitForOrderRoutine());
     }
 
-    private IEnumerator WaitForOrderRoutine()
-    {
-        while (!orderCompleted)
-            yield return null;
-
-        if (orderIconGO != null)
-        {
-            Destroy(orderIconGO);
-            orderIconGO = null;
-        }
-
-        LeaveChair();
-    }
-
-    public Food GetOrderedFood() => orderedFood;
-
+    // 음식 받으면 아이콘 제거 + 3초 식사
     public void ReceiveFood(GameObject deliveredFood = null)
     {
-        if (orderCompleted) return;
-
-        orderCompleted = true;
+        if (isEating) return;
+        isEating = true;
 
         if (orderIconGO != null)
         {
@@ -218,41 +138,80 @@ public class Customer : MonoBehaviour
         if (deliveredFood != null)
             Destroy(deliveredFood);
 
-        LeaveChair();
+        StartCoroutine(EatingRoutine());
     }
 
-    public void CompleteOrder() => ReceiveFood();
-
-    public void LeaveChair()
+    private IEnumerator EatingRoutine()
     {
-        if (targetChair != null)
+        // 3초 식사
+        yield return new WaitForSeconds(3f);
+
+        // 접시 생성
+        CreateDishOnChair();
+
+        orderCompleted = true;
+        leaveState = LeaveState.GoingToCounter;
+        isEating = false;
+    }
+
+    private void CreateDishOnChair()
+    {
+        if (dishPrefab != null && targetChair != null)
         {
-            if (dishPrefab != null)
-            {
-                GameObject dish = Instantiate(dishPrefab, targetChair.transform.position, Quaternion.identity);
-                Dish dishScript = dish.GetComponent<Dish>();
-                if (dishScript != null)
-                    dishScript.linkedChair = targetChair;
+            GameObject dish = Instantiate(dishPrefab, targetChair.transform.position, Quaternion.identity);
+            Dish dishScript = dish.GetComponent<Dish>();
+            if (dishScript != null)
+                dishScript.linkedChair = targetChair;
 
-                targetChair.isOccupied = true;
-            }
-
-            targetChair.Leave();
+            // 의자 상태 업데이트
+            targetChair.hasDish = true;
         }
-
-        targetChair = null;
-        hasChair = false;
-        isLeaving = true;
-        leaveState = LeaveState.GoingToCounter; // 먼저 카운터로 이동
     }
 
-    public void SetExit(Transform exitTransform)
+    private void HandleLeaving()
     {
-        exitPositionTransform = exitTransform;
+        Vector2 target = Vector2.zero;
+
+        switch (leaveState)
+        {
+            case LeaveState.GoingToCounter:
+                target = counterPosition.position;
+                MoveTowards(target);
+                if (Vector2.Distance(rb.position, target) < 0.1f)
+                {
+                    moneyManager?.AddMoney((int)(orderedFood?.price ?? 0));
+                    leaveState = LeaveState.GoingToExit;
+                }
+                break;
+
+            case LeaveState.GoingToExit:
+                target = exitPositionTransform.position;
+                MoveTowards(target);
+                if (Vector2.Distance(rb.position, target) < 0.1f)
+                {
+                    Destroy(gameObject);
+                }
+                break;
+        }
     }
 
-    public bool IsSeated => hasChair && !isLeaving && !orderCompleted;
+    public Food GetOrderedFood() => orderedFood;
+
+    public bool IsSeated => hasSat && (!orderCompleted || isEating);
+
+    public void CompleteOrder() => orderCompleted = true;
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 

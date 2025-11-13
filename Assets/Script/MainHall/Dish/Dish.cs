@@ -5,48 +5,53 @@ public class Dish : MonoBehaviour
 {
     private Vector3 offset;
     private bool dragging = false;
-    private Camera cam;
+    private SpriteRenderer spriteRenderer;
+    private int originalSortingOrder;
 
-    // 손님이 앉아 있던 자리 연결
-    public CC linkedChair;
+    //  손님이 앉았던 의자 연결용
+    [HideInInspector] public CC linkedChair;
 
-    void Start()
+    void Awake()
     {
-        cam = Camera.main;
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+            originalSortingOrder = spriteRenderer.sortingOrder;
 
-        // 생성 시 자리 점유 상태 유지
-        if (linkedChair != null)
-            linkedChair.isOccupied = true;
+        Collider2D col = GetComponent<Collider2D>();
+        if (col != null)
+            col.isTrigger = true;
     }
 
     void OnMouseDown()
     {
-        if (cam == null) cam = Camera.main;
-        Vector3 mousePos = cam.ScreenToWorldPoint(Input.mousePosition);
+        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         offset = transform.position - new Vector3(mousePos.x, mousePos.y, transform.position.z);
         dragging = true;
-    }
 
-    void OnMouseDrag()
-    {
-        if (!dragging) return;
-
-        Vector3 mousePos = cam.ScreenToWorldPoint(Input.mousePosition);
-        transform.position = new Vector3(mousePos.x, mousePos.y, transform.position.z) + offset;
+        if (spriteRenderer != null)
+            spriteRenderer.sortingOrder = 1000;
     }
 
     void OnMouseUp()
     {
         dragging = false;
+
+        if (spriteRenderer != null)
+            spriteRenderer.sortingOrder = originalSortingOrder;
     }
 
-    // 접시가 치워질 때 호출 (예: 플레이어가 세척장에 드롭)
-    public void ClearDish()
+    void Update()
     {
-        if (linkedChair != null)
-            linkedChair.isOccupied = false;
-
-        Destroy(gameObject);
+        if (dragging)
+        {
+            Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            transform.position = new Vector3(mousePos.x, mousePos.y, 0) + offset;
+        }
     }
 }
+
+
+
+
+
 

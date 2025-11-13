@@ -1,19 +1,25 @@
 using UnityEngine;
 using TMPro;
+using System;
 
 public class TimeManager : MonoBehaviour
 {
-    public static TimeManager Instance; // ✅ 싱글톤
+    public static TimeManager Instance;
 
-    public float gameDuration = 30f; 
-    public GameObject resultPanel;
+    [Header("게임 기본 설정")]
+    public float gameDuration = 30f;
+
+    [Header("UI 오브젝트")]
     public TextMeshProUGUI timerText;
 
-    public TMP_Text visitorsText;
-    public TMP_Text totalMoneyText;
-    public TMP_Text roundEarningsText;
+    [Header("패널 설정")]
+    public GameObject ClosingPanel;  
 
     private float timer;
+    private bool gameActive = false;
+
+    // ClosePanel 키 입력 시 호출될 이벤트
+    public Action OnClosingPanelAnyKey;
 
     void Awake()
     {
@@ -24,46 +30,105 @@ public class TimeManager : MonoBehaviour
     void Start()
     {
         timer = gameDuration;
-        resultPanel.SetActive(false);
-        Time.timeScale = 1f;
+        if (ClosingPanel != null)
+            ClosingPanel.SetActive(false);
+
         UpdateTimerUI();
     }
 
     void Update()
     {
-        timer -= Time.deltaTime;
-
-        if (timer <= 0f)
+        if (gameActive)
         {
-            timer = 0f;
-            EndGame();
+            timer -= Time.deltaTime;
+            if (timer <= 0f)
+            {
+                timer = 0f;
+                EndGame();
+            }
+            UpdateTimerUI();
+            return;
         }
 
-        UpdateTimerUI();
+        // 게임 종료 상태 + ClosingPanel 활성 시 키 입력 감지
+        if (ClosingPanel != null && ClosingPanel.activeSelf)
+        {
+            if (Input.anyKeyDown)
+            {
+                ClosingPanel.SetActive(false);
+                OnClosingPanelAnyKey?.Invoke(); // 이벤트 호출
+            }
+        }
     }
 
     void UpdateTimerUI()
     {
-        timerText.text = Mathf.Ceil(timer).ToString();
+        if (timerText != null)
+            timerText.text = Mathf.Ceil(timer).ToString();
     }
 
-    public float GetRemainingTime() // ✅ 외부에서 접근 가능한 함수
+    public void StartGame()
     {
-        return timer;
+        gameActive = true;
+        Debug.Log("게임 시작");
+    }
+
+    public void ResetTimer()
+    {
+        timer = gameDuration;
+        UpdateTimerUI();
+        gameActive = false;
     }
 
     void EndGame()
     {
-        Time.timeScale = 0f;
-        resultPanel.SetActive(true);
+        gameActive = false;
 
-        visitorsText.text = $"방문 손님 수: {MoneyManager.Instance.visitedCustomersCount}명";
-        totalMoneyText.text = $"현재 보유 금액: {MoneyManager.Instance.totalMoney}원";
-        roundEarningsText.text = $"이번 라운드 수익: {MoneyManager.Instance.roundEarnings}원";
+        if (ClosingPanel != null)
+            ClosingPanel.SetActive(true);
 
-        Debug.Log("게임 종료 - 결산 패널 표시");
+        Debug.Log("게임 종료 - ClosePanel 대기");
+    }
+
+    public bool IsGameActive()
+    {
+        return gameActive;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -3,35 +3,87 @@ using System.Collections;
 
 public class CustomerSpawner : MonoBehaviour
 {
+    [Header("손님 생성")]
     public GameObject customerPrefab;
-    public Transform counterPoint;
-    public Transform exitPoint;
+    public Transform parentTransform;   // 생성될 손님 부모
     public float spawnInterval = 5f;
 
-    IEnumerator Start()
+    [Header("카운터/출구 설정")]
+    public Transform counterPoint;
+    public Transform exitPoint;
+
+    private bool isSpawning = false;
+
+    public void StartSpawning()
     {
-        while (true)
+        if (!isSpawning)
         {
-            //  남은 시간이 20초 이하이면 더 이상 손님 생성 X
-            if (TimeManager.Instance.GetRemainingTime() <= 20f)
-                yield break;
+            isSpawning = true;
+            StartCoroutine(SpawnCustomers());
+        }
+    }
 
-            GameObject customerObj = Instantiate(customerPrefab, transform.position, Quaternion.identity);
-            Customer customer = customerObj.GetComponent<Customer>();
-            if (customer != null)
+    private IEnumerator SpawnCustomers()
+    {
+        while (TimeManager.Instance != null && TimeManager.Instance.IsGameActive())
+        {
+            if (customerPrefab != null)
             {
-                customer.counterPosition = counterPoint;
-                customer.SetExit(exitPoint);
-                customer.StartFindingChair();
-            }
+                // 손님 생성
+                GameObject customerObj = Instantiate(customerPrefab, transform.position, Quaternion.identity);
 
-            //  방문 손님 1명 증가
-            MoneyManager.Instance.AddVisitor();
+                // 부모 설정
+                if (parentTransform != null)
+                    customerObj.transform.SetParent(parentTransform);
+
+                // 스크립트 연결
+                Customer customer = customerObj.GetComponent<Customer>();
+                if (customer != null)
+                {
+                    customer.moneyManager = MoneyManager.Instance;       // MoneyManager 자동 연결
+                    customer.counterPosition = counterPoint;            // 카운터 위치
+                    customer.exitPositionTransform = exitPoint;         // 출구 위치
+                    customer.StartFindingChair();                        // 의자 찾기 시작
+                }
+
+                MoneyManager.Instance?.AddVisitor(); // 방문자 기록
+            }
 
             yield return new WaitForSeconds(spawnInterval);
         }
+
+        isSpawning = false;
+        Debug.Log("손님 스폰 종료");
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

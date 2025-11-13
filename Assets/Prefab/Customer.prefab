@@ -102,8 +102,20 @@ MonoBehaviour:
   moveSpeed: 2
   obstacleLayer:
     serializedVersion: 2
-    m_Bits: 0
-  foodOptions: []
+    m_Bits: 64
+  foodOptions:
+  - {fileID: 11400000, guid: aba3393590420184b9ae3930643a42be, type: 2}
+  - {fileID: 11400000, guid: 1ee0fe3ce65ef9e41813ce3e86a95d2f, type: 2}
+  - {fileID: 11400000, guid: 44453edfa8e644044ba1ace61a261aa8, type: 2}
+  - {fileID: 11400000, guid: 8c52d35d7282792418ef2ebc61c12fc8, type: 2}
+  - {fileID: 11400000, guid: f331d0b6d872834439df50564ef82d5e, type: 2}
+  - {fileID: 11400000, guid: c35051ac73b82e24ab5bba6d76a7a0d1, type: 2}
+  dishPrefab: {fileID: 2420659884551094264, guid: 80bbd7b479f3a4647b93ed67b015a26e, type: 3}
+  moneyManager: {fileID: 0}
+  counterPosition: {fileID: 0}
+  exitPositionTransform: {fileID: 0}
+  iconScale: 0.5
+  iconHeight: 1.5
 --- !u!50 &378720763261890104
 Rigidbody2D:
   serializedVersion: 4

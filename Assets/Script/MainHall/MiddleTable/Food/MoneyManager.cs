@@ -17,6 +17,14 @@ public class MoneyManager : MonoBehaviour
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
     }
+    public void StartNewRound()
+{
+    visitedCustomersCount = 0;
+    roundEarnings = 0;
+    moneyAtGameStart = totalMoney; // 라운드 시작 시 기준 금액 갱신
+    Debug.Log("MoneyManager: 새 라운드 시작");
+}
+
 
     private void Start()
     {

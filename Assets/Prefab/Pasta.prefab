@@ -270,4 +270,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f64c8678d552fa4c82f836ad548bc88, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  foodData: {fileID: 11400000, guid: bd5664d935af4e946a99c94a512f03a5, type: 2}
+  foodData: {fileID: 11400000, guid: 44453edfa8e644044ba1ace61a261aa8, type: 2}
