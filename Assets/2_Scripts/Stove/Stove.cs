@@ -155,9 +155,6 @@ public class Stove : StoveLevelSystem
         {
             StoveManager.Instance.UpgradeAllStoves();
         }
-        else
-        {
-            Debug.LogError("StoveManager가 씬에 없습니다! 씬에 StoveManager 오브젝트를 추가했는지 확인하세요.");
-        }
+        else return;
     }
 }
